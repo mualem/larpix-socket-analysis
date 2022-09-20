@@ -11,6 +11,7 @@ from collections import Counter
 from tkinter import filedialog as fd
 
 NumASICchannels = 64
+# Turn plotter on/off here
 ShowPlots = True
 
 #varlist = []
