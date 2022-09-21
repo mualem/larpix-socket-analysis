@@ -282,7 +282,7 @@ for chan in range(NumASICchannels):
 		MaxMean=50.0
 		MinMean=3.0
 		theStd=2.0
-		MaxStd=6.0
+		MaxStd=7.0
 		MinStd=0.50
 
 		limitsdf=limitsdf.append({'Mean':theMean,'maxMean':MaxMean,'minMean':MinMean,
@@ -661,6 +661,11 @@ for chip in EmptyChip.index:
 	if chip not in tt.index: # tt.index is list of chips with a good test
 		emptyChiptot=emptyChiptot+1
 		#print('bad chip=',chip)
+		
+#Try to get serial numbers for chips with any "badness", empty or out of spec
+#BadOrEmptyChip=t3+EmptyChip
+#BadOrEmptyChip=BadOrEmptyChip.groupby('ChipSN').count()
+#print(BadOrEmptyChip['ChipSN']
 
 print('Number of Empty and bad chips: ',emptyChiptot)
 
