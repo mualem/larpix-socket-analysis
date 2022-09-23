@@ -281,7 +281,7 @@ for chan in range(NumASICchannels):
 		MaxMean=50.0
 		MinMean=3.0
 		theStd=2.0
-		MaxStd=6.0
+		MaxStd=7.0
 		MinStd=0.50
 
 		limitsdf=limitsdf.append({'Mean':theMean,'maxMean':MaxMean,'minMean':MinMean,
@@ -663,12 +663,39 @@ for chip in EmptyChip.index:
 
 print('Number of Empty and bad chips: ',emptyChiptot)
 
+#Try to get serial numbers for chips with any "badness", empty or out of spec
+BadOrEmptyChip=t3+EmptyChip
+BadOrEmptyChip=BadOrEmptyChip.groupby('ChipSN').count()
+#print(BadOrEmptyChip)
+for chip in BadOrEmptyChip.index: 
+	if chip not in tt.index: # tt.index is list of chips with a good test
+		print('bad or empty chip=\t',chip)
+
+#print(BadOrEmptyChip.index)
+
+
 print('\n\n\n List of ASICs with ALL good channels \n\n')
 element=0
 for SN in tt.index :
 	element=element+1
 	if element % 6  : print(SN,end=',')
 	else : print(SN)
+
+print('\n\n\n List of Bad or Missing Serial Numbers ')
+
+lastSNCounter=0
+tt=tt.sort_index()
+for SN in tt.index :
+	thisSNCounter=int(SN[2:])
+	#print(thisSNCounter)
+	if thisSNCounter != lastSNCounter+1 and lastSNCounter != 0 : 
+		#print(thisSNCounter,lastSNCounter)
+		for badmissing in range(lastSNCounter+1,thisSNCounter):
+			print('bad or missing sn:\t',SN[:2]+str(badmissing))
+		#lastSNCounter=thisSNCounter
+		#print(SNCounter)
+	lastSNCounter=thisSNCounter
+
 
 GoodResults=t2.groupby(['ChipSN','runtime']).count()
 EmptyResults=EmptyChan.groupby(['ChipSN','runtime']).count()
