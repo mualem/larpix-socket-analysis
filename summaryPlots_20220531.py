@@ -11,7 +11,7 @@ from collections import Counter
 from tkinter import filedialog as fd
 
 NumASICchannels = 64
-ShowPlots = False
+ShowPlots = True
 
 #varlist = []
 #for chan in range(0,32): varlist.append('ch{:02d}'.format(chan))

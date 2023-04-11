@@ -8,6 +8,7 @@ import plotly.graph_objs as go
 import csv
 import numpy as np
 from collections import Counter
+from tkinter import filedialog as fd
 
 NumASICchannels = 64
 ShowPlots = False
@@ -170,7 +171,7 @@ if v2bModule2:
 	summaryFrame = summaryFrame.append(pd.read_csv("bps-summary220329.csv"),ignore_index=True)
 
 
-v2bModule2retest=True
+v2bModule2retest=False
 if v2bModule2retest:
 	summaryFrame = pd.read_csv("data/bps-summary220405.csv")
 	#summaryFrame = pd.read_csv("data/bps-summary220406.csv")
@@ -182,11 +183,42 @@ if v2bModule2retest:
 	#summaryFrame = pd.read_csv("data/bps-summary220411.csv")
 	summaryFrame = summaryFrame.append(pd.read_csv("data/bps-summary220411.csv"),ignore_index=True)
 
+v2bModule2part2=False
+if v2bModule2part2:
+	summaryFrame = pd.read_csv("data/bps-summary220512.csv")
+	#summaryFrame = pd.read_csv("data/bps-summary220512.csv")
+	summaryFrame = summaryFrame.append(pd.read_csv("data/bps-summary220513.csv"),ignore_index=True)
+	#summaryFrame = pd.read_csv("data/bps-summary220513.csv")
+	#summaryFrame = summaryFrame.append(pd.read_csv("data/bps-summary220518.csv"),ignore_index=True)
+	#summaryFrame = pd.read_csv("data/bps-summary220518.csv")
+	#summaryFrame = summaryFrame.append(pd.read_csv("data/bps-summary220408.csv"),ignore_index=True)
+	#summaryFrame = pd.read_csv("data/bps-summary220411.csv")
+	#summaryFrame = summaryFrame.append(pd.read_csv("data/bps-summary220411.csv"),ignore_index=True)
+
+def selectFile(defaultFile):
+	filetypes = (('csv files','*.csv'),('text files','*.txt'),('All files','*.*'))
+	filename = fd.askopenfilename(
+		title='Serial Number file name',
+		initialdir='./data/',
+		initialfile=defaultFile,
+		filetypes=filetypes,
+		multiple=True)
+	return filename
+
+inputCSVfiles=selectFile('')
+listlen=len(inputCSVfiles)
+if listlen<1:
+	exit("Must enter one or more (with ctrl-click) files to use")
+summaryFrame = pd.read_csv(inputCSVfiles[0])
+if listlen>1:
+	for filename in inputCSVfiles[1:]:
+		#print(filename)
+		summaryFrame = summaryFrame.append(pd.read_csv(filename),ignore_index=True)
+# exit()
 
 #tempFrm=summaryFrame[summaryFrame['Chan']==0].to_csv("concat_data.csv",mode='w')
 
-# try to get ShortSN from the sequence without
-#exit()
+# try to get ShortSN from the sequence
 summaryFrame['ShortSN']=summaryFrame['ChipSN'].str[2:] # should get from 2 to the end, skip 0 and 1 item
 
 MedMeanbyChan=[]
@@ -404,7 +436,7 @@ for chan in range(NumASICchannels):
 		MinStd = round(limitsdf['minStd'][(limitsdf['Chan']==chan)].values[0],2)
 		print('Range for chan ',chan,' Mean and Std= [',MinMean,',',MaxMean,'][',MinStd,',',MaxStd,']')
 		#badChan =summaryFrame[ (summaryFrame['Chan']==chan) & ((summaryFrame['Std']<1) | (summaryFrame['Mean']>240)) ]
-		badChan =summaryFrame[ (summaryFrame['Chan']==chan) & ( ( (summaryFrame['Std']>MaxStd) | (summaryFrame['Std']<MinStd) )
+		badChan =summaryFrame[ (summaryFrame['Chan']==chan) & ( (summaryFrame['Nent']==0) | ( (summaryFrame['Std']>MaxStd) | (summaryFrame['Std']<MinStd) )
 				| ( (summaryFrame['Mean']<MinMean) | (summaryFrame['Mean']>MaxMean) ) ) ] # | (summaryFrame['Nent']==0) ) ]
 		# This doesn't work because I loop over channels.  I need to do it all at once but can't figure out the syntax.
 		#summaryFrame['badChan']=(summaryFrame['Chan']==chan) & ( ( (summaryFrame['Std']>MaxStd) | (summaryFrame['Std']<MinStd) )
@@ -559,7 +591,7 @@ print('Number of bad chips: ',badChiptot)
 EmptyChip=EmptyChan.groupby('ChipSN').count()
 emptyChiptot=0
 for chip in EmptyChip.index: 
-	if chip not in tt.index: 
+	if chip not in tt.index: # tt.index is list of chips with a good test
 		emptyChiptot=emptyChiptot+1
 		#print('bad chip=',chip)
 
@@ -571,3 +603,11 @@ for SN in tt.index :
 	element=element+1
 	if element % 6  : print(SN,end=',')
 	else : print(SN)
+
+GoodResults=t2.groupby(['ChipSN','runtime']).count()
+EmptyResults=EmptyChan.groupby(['ChipSN','runtime']).count()
+BadOnlyResults=AllbadChan[ (AllbadChan['Nent']>0) ].groupby(['ChipSN','runtime']).count()
+
+print('GoodResults',GoodResults)
+print('EmptyResults',EmptyResults)
+print('BadOnlyResults',BadOnlyResults)
