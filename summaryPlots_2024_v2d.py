@@ -63,7 +63,7 @@ inputCSVfiles=selectFile('')
 listlen=len(inputCSVfiles)
 if listlen<1:
 	exit("Must enter one or more (with ctrl-click) files to use")
-summaryFrame = pd.read_csv(inputCSVfiles[0])
+summaryFrame = pd.read_csv(inputCSVfiles[0],dtype={'ChipSN':str})
 if listlen>1:
 	for filename in inputCSVfiles[1:]:
 		#print(filename)
