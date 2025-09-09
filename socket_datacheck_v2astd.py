@@ -166,6 +166,9 @@ fig.update_layout(barmode='overlay')
 if os.getenv('socket_PlotBaselineChannels')=='1':
 	fig.show()	
 
+# Trigger type  0=Normal, 1=External, 2=Cross, 3=Periodic
+# Select packets with trigger that are not normal and not periodic 
+# d[(d['trigger_type']!=0) & (d['trigger_type']!=3)]
 
 BaselineDirPath = DateDirPath+"/baselines/"
 if not os.path.exists(BaselineDirPath) : os.mkdir(BaselineDirPath)
