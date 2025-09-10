@@ -47,13 +47,33 @@ print(badchip)
 badchipSN=badchip['ChipSN']
 goodchipSN=goodchip['ChipSN']
 
+GoodSNList=[]
+
+GoodSNList=goodchipSN.drop_duplicates().to_list()
+
+#print('GoodSNList=',GoodSNList)
+
+summaryByChip=[]
+for SN in GoodSNList:
+    #summaryByChip.append((SN,'Good'))
+    testtime=goodchip['TestTime'][(goodchip['ChipSN']==SN)]
+    #print(testtime.iat[0])
+    summaryByChip.append((SN,testtime.iat[0],'Good'))
 BadSNList=[]
 
 for SN in badchipSN.drop_duplicates().to_list() :
-	if SN not in goodchipSN.drop_duplicates().to_list() :
-		print(SN)
-		BadSNList.append(SN)
+    if SN not in goodchipSN.drop_duplicates().to_list() :
+        #print(SN)
+        BadSNList.append(SN)
+        #summaryByChip.append((SN,'Bad'))
+        testtime=badchip['TestTime'][(badchip['ChipSN']==SN)]
+        #print(testtime.iat[0])
+        summaryByChip.append((SN,testtime.iat[0],'Bad'))
 
-print(BadSNList)
-
-
+print('BadSNList=',BadSNList)
+summaryByChip.sort()
+#print(summaryByChip)
+netsummary=pd.DataFrame(summaryByChip)
+#print(netsummary)
+summaryfilename=inputCSVfiles[0].replace("netconfig","netsummary")
+netsummary.to_csv(summaryfilename,index=False,header=False)
