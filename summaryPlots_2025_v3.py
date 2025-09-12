@@ -6,48 +6,12 @@ import chart_studio
 import chart_studio.plotly as py
 import plotly.graph_objs as go
 import csv
+import sys
 import numpy as np
 from collections import Counter
-from tkinter import filedialog as fd
 
 NumASICchannels = 64
 ShowPlots = False
-
-#varlist = []
-#for chan in range(0,32): varlist.append('ch{:02d}'.format(chan))
-
-#meandf = pd.read_csv("20200131_all78/means.csv")
-#stddf = pd.read_csv("20200131_all78/sdevs.csv")
-#nentdf = pd.read_csv("20200131_all78/nents.csv")
-#meandf.plot.hist()
-#fig = px.histogram(sdev)
-#fig = px.histogram(stddf)
-#fig.show()
-#fig = px.histogram(stddf,x='ch00')
-#fig.show()
-#fig = px.histogram(meandf,x='ch00')
-#fig.show()
-
-#fig4 = go.Figure()
-#for graph in varlist: fig4.add_trace(go.Histogram(x=nentdf[graph]))
-
-#fig4.show()
-
-#fig5 = px.scatter(x=meandf[],y=stddf[])
-#fig3.update_layout(barmode="stack")
-#fig3.update_layout(barmode="overlay")
-#for graph in varlist: fig3.add_trace(go.Histogram(x=meandf[graph],xbins=dict(start=0,end=255,size=3)))
-
-#fig3.show()
-
-# reshape separate csvs to single summary.csv
-
-#summaryFrame = pd.DataFrame(columns = ['runtime','Mean','Std','Nent','ChanName','Chan'])
-#summaryFrame2 = pd.read_csv("20200204_tray1_summary.csv")
-#summaryFrame = pd.read_csv("20200131_all78/summary.csv")
-#summaryFrame = pd.read_csv("20200204_tray0_summary.csv")
-#summaryFrame = pd.read_csv("20200206_boiling_pixel.csv")
-
 
 def selectFile(defaultFile):
 	filetypes = (('csv files','*.csv'),('text files','*.txt'),('All files','*.*'))
@@ -59,8 +23,22 @@ def selectFile(defaultFile):
 		multiple=True)
 	return filename
 
-inputCSVfiles=selectFile('')
-listlen=len(inputCSVfiles)
+# if we get a parameter, assume that is the filename we will use, otherwise we'll pop up the tk dialog
+print(sys.argv)
+inputCSVfiles=[]
+if len(sys.argv) > 1 : #We got some arguments passed to our python code, it should be the input file
+	inputCSVfiles.append(sys.argv[1])
+	print("Using input file ",inputCSVfiles[0])
+	listlen=1
+else:
+	from tkinter import filedialog as fd
+	inputCSVfiles=selectFile('')
+	listlen=len(inputCSVfiles)
+	print('listlen=',listlen)
+	print('inputCSVfiles=',inputCSVfiles)
+	if listlen<1:
+		exit("Must enter one or more (with ctrl-click) files to use")
+
 if listlen<1:
 	exit("Must enter one or more (with ctrl-click) files to use")
 summaryFrame = pd.read_csv(inputCSVfiles[0],dtype={'ChipSN':str})
@@ -68,37 +46,17 @@ if listlen>1:
 	for filename in inputCSVfiles[1:]:
 		#print(filename)
 		summaryFrame = summaryFrame.append(pd.read_csv(filename),ignore_index=True)
-# exit()
-
-#tempFrm=summaryFrame[summaryFrame['Chan']==0].to_csv("concat_data.csv",mode='w')
 
 # try to get ShortSN from the sequence
 summaryFrame['ShortSN']=summaryFrame['ChipSN'].str[2:] # should get from 2 to the end, skip 0 and 1 item
 
 MedMeanbyChan=[]
+
 MaxMeanbyChan=[]
 MinMeanbyChan=[]
 MedStdbyChan=[]
 MaxStdbyChan=[]
 MinStdbyChan=[]
-
-
-# standards from first 38, used for first 307 for module 0
-#MeanMeanbyChan = [14.16, 14.23, 14.34, 14.44, 15.03, 15.83, -999., -999., -999., -999., 42.28, 22.95, 18.71, 14.53, 13.69, 14.06, 13.11, 14.02, 13.97, 15.42, 15.29, 16.25, -999., -999., -999., -999., 11.38, 11.91, 10.03, 9.92, 12.54, 11.96, 11.84, 14.35, 15.0, 14.16, 18.39, 21.74, -999., -999., -999., 9.03, 11.3, 11.37, 9.08, 11.57, 11.44, 8.96, 11.83, 11.7, 9.76, 11.25, 12.06, 11.47, -999., -999., -999., -999., 12.24, 12.7, 13.19, 12.44, 13.47, 13.59]
-#StdMeanbyChan = [1.39, 1.44, 1.49, 1.8, 2.05, 5.58, -999., -999., -999., -999., 3.74, 2.7, 2.34, 2.19, 2.21, 2.29, 2.52, 2.68, 3.22, 4.1, 5.13, 8.02, -999., -999., -999., -999., 2.27, 2.06, 2.14, 2.04, 1.66, 1.91, 1.86, 1.64, 2.02, 2.19, 2.43, 3.78, -999., -999., -999., 3.73, 2.52, 1.74, 1.85, 1.47, 1.41, 1.58, 1.49, 1.43, 1.69, 1.74, 2.29, 2.73, -999., -999., -999., -999., 1.55, 1.42, 1.49, 1.34, 1.35, 1.36]
-#MeanStdbyChan = [1.68, 1.28, 1.91, 1.85, 1.6, 2.61, -999., -999., -999., -999., 2.54, 1.79, 1.71, 1.81, 1.82, 1.92, 1.77, 1.44, 1.97, 1.77, 1.62, 1.9, -999., -999., -999., -999., 1.96, 1.25, 1.51, 1.6, 1.72, 1.67, 1.61, 1.51, 2.06, 1.49, 1.53, 2.17, -999., -999., -999., 1.46, 1.58, 1.13, 1.88, 1.94, 2.04, 1.13, 1.64, 1.71, 1.84, 1.63, 1.88, 2.94, -999., -999., -999., -999., 1.78, 1.97, 2.02, 1.82, 1.69, 1.39]
-#StdStdbyChan = [0.06, 0.05, 0.09, 0.95, 0.44, 1.69, -999., -999., -999., -999., 0.2, 0.11, 0.11, 0.13, 0.12, 0.18, 0.25, 0.28, 0.34, 0.53, 0.69, 1.3, -999., -999., -999., -999., 0.36, 0.19, 0.17, 0.3, 0.1, 0.11, 0.09, 0.08, 0.08, 0.09, 0.11, 0.16, -999., -999., -999., 0.14, 0.11, 0.07, 0.95, 0.07, 0.06, 0.09, 0.5, 0.14, 0.4, 0.96, 3.62, 4.14, -999., -999., -999., -999., 1.07, 0.35, 0.74, 0.06, 0.06, 0.05]
-
-# Load limits dataFrame Should do this from a file, or database at some point.
-
-# standards used for first 307 for module 0 and 1
-
-#MeanMeanbyChan=[14.07, 14.2, 14.27, 14.6, 15.34, 15.54, -999.0, -999.0, -999.0, -999.0, 42.58, 23.44, 19.02, 14.67, 14.19, 14.11, 13.18, 14.08, 14.2, 15.68, 15.45, 16.52, -999.0, -999.0, -999.0, -999.0, 11.48, 12.02, 10.47, 10.51, 13.3, 12.35, 12.34, 14.77, 15.06, 14.7, 18.25, 21.93, -999.0, -999.0, -999.0, 9.6, 11.35, 11.72, 9.15, 11.74, 11.8, 9.56, 12.02, 11.94, 9.9, 11.82, 11.92, 11.35, -999.0, -999.0, -999.0, -999.0, 12.2, 12.88, 12.98, 13.31, 13.55, 13.64]
-#StdMeanbyChan=[1.69, 1.87, 1.98, 11.15, 1.96, 2.21, -999.0, -999.0, -999.0, -999.0, 2.59, 2.6, 2.14, 1.88, 1.79, 1.75, 1.79, 1.82, 1.78, 2.06, 8.48, 2.53, -999.0, -999.0, -999.0, -999.0, 1.7, 1.8, 1.68, 1.83, 1.76, 1.89, 1.59, 1.84, 1.77, 1.62, 1.54, 1.92, -999.0, -999.0, -999.0, 1.69, 1.65, 1.69, 1.79, 1.68, 1.7, 1.65, 1.65, 1.7, 1.66, 1.82, 1.72, 1.85, -999.0, -999.0, -999.0, -999.0, 7.76, 2.06, 1.8, 1.89, 1.65, 1.94]
-#MeanStdbyChan=[1.36, 1.4, 1.46, 1.58, 1.9, 5.14, -999.0, -999.0, -999.0, -999.0, 3.71, 2.68, 2.31, 2.16, 2.18, 2.28, 2.45, 2.71, 3.16, 3.92, 4.86, 7.96, -999.0, -999.0, -999.0, -999.0, 2.26, 2.03, 2.11, 1.95, 1.65, 1.87, 1.83, 1.64, 1.99, 2.18, 2.39, 3.75, -999.0, -999.0, -999.0, 3.72, 2.47, 1.72, 1.64, 1.44, 1.37, 1.53, 1.37, 1.39, 1.61, 1.55, 1.65, 1.99, -999.0, -999.0, -999.0, -999.0, 1.37, 1.35, 1.35, 1.33, 1.32, 1.34]
-#StdStdbyChan=[1.46, 4.34, 2.88, 2.83, 2.49, 2.45, -999.0, -999.0, -999.0, -999.0, 1.71, 4.55, 3.47, 2.85, 3.21, 3.17, 2.87, 3.44, 3.85, 3.71, 3.26, 4.39, -999.0, -999.0, -999.0, -999.0, 1.74, 1.88, 2.98, 2.74, 1.7, 2.6, 2.61, 1.66, 2.61, 2.77, 1.56, 1.43, -999.0, -999.0, -999.0, 1.87, 1.69, 1.6, 2.6, 1.49, 1.47, 2.77, 1.52, 1.88, 2.72, 1.38, 1.74, 2.19, -999.0, -999.0, -999.0, -999.0, 1.79, 1.65, 1.49, 1.86, 2.81, 4.21]
-
-# standards measured from 540 v2b on the socket board.
 
 MeanMeanbyChan=[16.68, 16.34, 16.62, 16.26, 16.78, 16.76, 16.81, 16.64, 11.97, 11.91, 12.68, 14.4, 14.79, 15.73, 15.93, 16.76, 16.96, 17.6, 17.47, 18.15, 17.86, 18.34, 18.23, 18.26, 17.3, 18.44, 18.19, 18.23, 17.74, 18.05, 17.38, 17.4, 17.13, 17.26, 16.98, 17.2, 16.76, 17.26, 17.03, 17.13, 18.6, 17.5, 17.18, 16.51, 16.68, 16.38, 17.01, 16.85, 17.03, 16.19, 16.48, 16.27, 16.49, 16.21, 16.94, 16.46, 16.81, 16.29, 16.61, 16.4, 16.54, 16.43, 16.64, 16.43]
 StdMeanbyChan=[2.23, 2.35, 2.27, 2.29, 2.24, 2.36, 2.08, 2.19, 2.17, 2.05, 2.11, 2.27, 2.19, 2.21, 2.23, 2.11, 2.28, 2.3, 2.26, 2.15, 2.35, 2.29, 2.45, 2.42, 2.1, 2.18, 2.15, 2.12, 2.15, 2.2, 2.23, 2.09, 2.28, 2.1, 2.16, 2.18, 2.12, 2.1, 2.14, 2.19, 2.48, 2.22, 2.5, 2.29, 2.31, 2.27, 2.58, 2.47, 2.68, 2.26, 2.04, 2.22, 2.15, 2.19, 2.04, 2.14, 2.23, 2.28, 2.31, 2.38, 2.17, 2.17, 2.3, 2.28]
@@ -112,38 +70,33 @@ MaxStdbyChan=[1.28, 2.24, 2.02, 1.64, 1.98, 1.85, 1.42, 1.56, 2.61, 1.82, 1.41, 
 MedStdbyChan=[0.97, 1.17, 1.14, 1.02, 1.06, 1.09, 0.98, 1.03, 1.08, 1.02, 0.98, 0.99, 0.98, 1.06, 0.97, 1.05, 0.94, 1.23, 1.0, 0.92, 1.1, 1.0, 1.0, 1.27, 1.16, 1.01, 0.98, 1.0, 1.01, 1.0, 1.04, 1.04, 1.07, 1.11, 1.2, 1.03, 1.05, 1.07, 1.18, 1.1, 1.89, 1.03, 0.98, 0.99, 0.93, 0.98, 0.94, 0.99, 0.95, 0.94, 0.96, 0.97, 1.0, 0.98, 0.98, 0.96, 1.1, 0.98, 1.0, 1.01, 1.01, 1.11, 0.96, 0.97]
 MinStdbyChan=[0.87, 0.89, 0.88, 0.87, 0.87, 0.9, 0.88, 0.93, 0.9, 0.88, 0.87, 0.88, 0.87, 0.87, 0.86, 0.86, 0.85, 0.93, 0.86, 0.85, 0.89, 0.89, 0.88, 0.92, 0.99, 0.9, 0.88, 0.87, 0.88, 0.87, 0.89, 0.88, 0.88, 0.91, 0.95, 0.89, 0.89, 0.9, 0.94, 0.97, 1.69, 0.96, 0.9, 0.88, 0.86, 0.87, 0.85, 0.86, 0.86, 0.86, 0.86, 0.87, 0.89, 0.88, 0.89, 0.9, 1.02, 0.88, 0.87, 0.87, 0.86, 0.89, 0.86, 0.85]
 
+
 limitsdf=pd.DataFrame(columns=['Mean','maxMean','minMean','Std','maxStd','minStd','ChanName','Chan'])
 
 for chan in range(NumASICchannels):
-	#if MeanMeanbyChan[chan]!=-999.:
 	textchan = 'ch{:02d}'.format(chan)
-	#original 38 used these
-	#errMean=3 * max(StdMeanbyChan[chan],4.0)
-	#errStd=5 * max(StdStdbyChan[chan],0.7)
-	#Module 0 and 1 used these:
-	#errMean=1.0 * max(StdMeanbyChan[chan],10.0)
-	#errStd=1.0 * max(StdStdbyChan[chan],3.0)
-
 	windowminus=3.0
 	windowplus=6.0
 	MaxMeanbyChan[chan]=MedMeanbyChan[chan]+windowplus*(MaxMeanbyChan[chan]-MedMeanbyChan[chan])
 	MinMeanbyChan[chan]=MedMeanbyChan[chan]-windowminus*(MedMeanbyChan[chan]-MinMeanbyChan[chan])
 	MaxStdbyChan[chan]=MedStdbyChan[chan]+windowplus*(MaxStdbyChan[chan]-MedStdbyChan[chan])
 	MinStdbyChan[chan]=MedStdbyChan[chan]-windowminus*(MedStdbyChan[chan]-MinStdbyChan[chan])
-	# Hardcoded values had 417/530 pass, most failures, ~40 on channel 47
-	#MaxMeanbyChan[chan]=30.0
-	#MinMeanbyChan[chan]=7.0
-	#MaxStdbyChan[chan]=9.0
-	#MinStdbyChan[chan]=0.5
 	# Try new fixed values for v2d second group
 	MaxMeanbyChan[chan]=250.0
 	MinMeanbyChan[chan]=200.0
 	MaxStdbyChan[chan]=4.0
 	MinStdbyChan[chan]=0.3
 
-	limitsdf=limitsdf.append({'Mean':MedMeanbyChan[chan],'maxMean':MaxMeanbyChan[chan],'minMean':MinMeanbyChan[chan],
-	'Std':MedStdbyChan[chan],'maxStd':MaxStdbyChan[chan],'minStd':MinStdbyChan[chan],
-	'ChanName':textchan,'Chan':chan},ignore_index=True)
+	#limitsdf=limitsdf.append({'Mean':MedMeanbyChan[chan],'maxMean':MaxMeanbyChan[chan],'minMean':MinMeanbyChan[chan],
+	#'Std':MedStdbyChan[chan],'maxStd':MaxStdbyChan[chan],'minStd':MinStdbyChan[chan],
+	#'ChanName':textchan,'Chan':chan},ignore_index=True)
+
+	limitsdf=pd.concat([limitsdf,pd.DataFrame({'Mean':MedMeanbyChan[chan],'maxMean':MaxMeanbyChan[chan],'minMean':MinMeanbyChan[chan],
+		'Std':MedStdbyChan[chan],'maxStd':MaxStdbyChan[chan],'minStd':MinStdbyChan[chan],
+		'ChanName':textchan,'Chan':chan},index=[chan])])
+	
+	# similar fix from socket_baselines_v3std.py
+	#limitsdf=pd.concat([limitsdf,pd.DataFrame({'Mean':MeanMeanbyChan[chan],'errMean':errMean,'Std':MeanStdbyChan[chan],'errStd':errStd,'ChanName':textchan,'Chan':chan},index=[0])])
 
 
 # END Loading limits dataFrame
@@ -472,3 +425,22 @@ BadOnlyResults=AllbadChan[ (AllbadChan['Nent']>0) ].groupby(['ChipSN','runtime']
 print('GoodResults',GoodResults)
 print('EmptyResults',EmptyResults)
 print('BadOnlyResults',BadOnlyResults)
+
+summaryout = []
+for tuple in GoodResults.index:
+	#print(tuple)
+	summaryout.append((tuple[0],int(tuple[1]),'GoodBps'))
+# the bad list can often have 2 or more bad test results keep track of which one we are on 
+# so we can skip redundant entries
+recentSN=''
+for tuple in BadOnlyResults.index:
+	if tuple[0] in tt.index: break
+	#print(tuple)
+	if tuple[0] != recentSN:
+		summaryout.append((tuple[0],int(tuple[1]),'BadBps'))
+		recentSN=tuple[0]
+
+summaryout.sort()
+summaryoutdf=pd.DataFrame(summaryout)
+summaryfilename=inputCSVfiles[0].replace("bps-summary","bps-results")
+summaryoutdf.to_csv(summaryfilename,index=False,header=False)

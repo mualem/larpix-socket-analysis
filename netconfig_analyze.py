@@ -6,12 +6,9 @@ import chart_studio
 import chart_studio.plotly as py
 import plotly.graph_objs as go
 import csv
+import sys
 import numpy as np
 from collections import Counter
-from tkinter import filedialog as fd
-
-NumASICchannels = 64
-ShowPlots = False
 
 
 def selectFile(defaultFile):
@@ -24,12 +21,25 @@ def selectFile(defaultFile):
 		multiple=True)
 	return filename
 
-inputCSVfiles=selectFile('')
-listlen=len(inputCSVfiles)
-print('listlen=',listlen)
-print('inputCSVfiles=',inputCSVfiles)
-if listlen<1:
-	exit("Must enter one or more (with ctrl-click) files to use")
+# if we get a parameter, assume that is the filename we will use, otherwise we'll pop up the tk dialog
+print(sys.argv)
+inputCSVfiles=[]
+if len(sys.argv) >= 1 : #We got some arguments passed to our python code, it should be the input file
+	inputCSVfiles.append(sys.argv[1])
+	print("Using input file ",inputCSVfiles[0])
+	listlen=1
+else:
+	from tkinter import filedialog as fd
+	inputCSVfiles=selectFile('')
+	listlen=len(inputCSVfiles)
+	print('listlen=',listlen)
+	print('inputCSVfiles=',inputCSVfiles)
+	if listlen<1:
+		exit("Must enter one or more (with ctrl-click) files to use")
+
+
+NumASICchannels = 64
+ShowPlots = False
 
 netconfigFrame = pd.read_csv(inputCSVfiles[0])
 
