@@ -31,6 +31,8 @@ echo -e "\nChecking for swapfiles"
 swaplist=(bitswap*)
 #echo $swaplist
 if [ -f $swaplist ] ; then
+	# add bitswap to the header line:
+	sed -i '/ChipSN/s/$/,bitswap/' ${batchsummaryfile}
 	for bitswap in `ls bitswap*` ; do
 		# extract SN from name
 		#echo $bitswap
@@ -42,10 +44,6 @@ else
 	echo -e  "No bitswap files found\n"
 fi
 
-
-
-#pwd
-#ls -l batchsummary*
 export GoodTests=$(grep -v ChipSN batchsummary* | grep -v bitswap | grep -i -c -h -e GoodBps)
 export NoiseFails=$(grep -v ChipSN batchsummary* | grep -i -c -h -e BadBps -e 'Good,,' -e bitswap)
 export CommFails=$(grep -v ChipSN batchsummary* | grep -v bitswap | grep -i -c -h -e ',bad,')
@@ -60,3 +58,5 @@ grep -v ChipSN batchsummary* | grep -i -h -e ',bad,'
 echo
 echo 'batch  StartSN  EndSN   asics   StartTime    EndTime   GoodTests   NoiseFails  CommFails'
 echo -e "${batch} ${StartSN} ${EndSN} ${asics} ${StartTime} ${EndTime} ${GoodTests} ${NoiseFails} ${CommFails}"  
+
+python $analysisdir/display-results.py ${batchsummaryfile}
