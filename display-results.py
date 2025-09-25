@@ -1,6 +1,7 @@
 import pandas as pd
 #import tkinter
 import sys
+import os
 import numpy as np
 import matplotlib
 matplotlib.use('TkAgg') # Or 'Qt5Agg', 'WebAgg', etc.
@@ -15,6 +16,10 @@ from matplotlib.lines import Line2D
 #    "category": np.random.choice(["A", "B", "C", "D"], size=180),
 #    "label": [f"ID{i:04d}" for i in range(180)]  # 7-char identifiers
 #})
+
+
+IsInteractive=os.isatty(sys.stdin.fileno())
+print('IsInteractive=',IsInteractive)
 
 def finalresult(row):
 	if len(row) > 5: # file had some bitswaps, check that first
@@ -134,4 +139,5 @@ plt.tight_layout()
 svgfile=inputCSVfile.replace("csv","png")
 plt.savefig(svgfile,format='png')
 
-plt.show()
+if IsInteractive:
+	plt.show()

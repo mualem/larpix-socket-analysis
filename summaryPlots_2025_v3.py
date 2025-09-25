@@ -91,7 +91,7 @@ for chan in range(NumASICchannels):
 	#'Std':MedStdbyChan[chan],'maxStd':MaxStdbyChan[chan],'minStd':MinStdbyChan[chan],
 	#'ChanName':textchan,'Chan':chan},ignore_index=True)
 
-	limitsdf=pd.concat([limitsdf,pd.DataFrame({'Mean':MedMeanbyChan[chan],'maxMean':MaxMeanbyChan[chan],'minMean':MinMeanbyChan[chan],
+	limitsdf=pd.concat([limitsdf.dropna(axis=1,how='all'),pd.DataFrame({'Mean':MedMeanbyChan[chan],'maxMean':MaxMeanbyChan[chan],'minMean':MinMeanbyChan[chan],
 		'Std':MedStdbyChan[chan],'maxStd':MaxStdbyChan[chan],'minStd':MinStdbyChan[chan],
 		'ChanName':textchan,'Chan':chan},index=[chan])])
 	

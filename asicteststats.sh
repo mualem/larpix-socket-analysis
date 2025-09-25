@@ -1,8 +1,8 @@
 #/usr/bin/bash
 #
 #
-export datadir='/home/mualem/gh-socket-testing/larpix-socket-analysis/data'
-export analysisdir='/home/mualem/gh-socket-testing/larpix-socket-analysis/'
+export datadir='/data2'
+export analysisdir='/home/apdlab/larpixvenv/larpix-socket-analysis/'
 export batch=$1
 export netconfigfile=netconfig$batch.csv
 export bpsfile=bps-summary$batch.csv
@@ -58,5 +58,8 @@ grep -v ChipSN batchsummary* | grep -i -h -e ',bad,'
 echo
 echo 'batch  StartSN  EndSN   asics   StartTime    EndTime   GoodTests   NoiseFails  CommFails'
 echo -e "${batch} ${StartSN} ${EndSN} ${asics} ${StartTime} ${EndTime} ${GoodTests} ${NoiseFails} ${CommFails}"  
+
+echo 'batch,StartSN,EndSN,asics,StartTime,EndTime,GoodTests,NoiseFails,CommFails'  > $batchdir/stats-$batch.csv
+echo "${batch},${StartSN},${EndSN},${asics},${StartTime},${EndTime},${GoodTests},${NoiseFails},${CommFails}" >> $batchdir/stats-$batch.csv
 
 python $analysisdir/display-results.py ${batchsummaryfile}
